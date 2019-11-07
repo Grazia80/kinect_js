@@ -16,6 +16,13 @@
     var ctx = canvas.getContext('2d');
     var colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'];
 
+    function length(joint1, joint2){
+        var dx = joint1.cameraX - joint2.cameraX;
+        var dy = joint1.cameraY - joint2.cameraY;
+        var dz = joint1.cameraZ - joint2.cameraZ;
+        return Math.sqrt(dx*dx + dy*dy + dz*dz);
+    }
+
     function draw(bodyFrame) {
         // Web Socket message:
         // console.log("Frame received");
@@ -23,31 +30,40 @@
         var index = 0;
         // console.log(bodyFrame);
         bodyFrame.bodies.forEach(function(body){
-				if(body.tracked) {
-					for(var jointType in body.joints) {
-						var joint = body.joints[jointType];
-						ctx.fillStyle = colors[index];
-						ctx.fillRect(joint.depthX * 512, joint.depthY * 424, 10, 10);
-					}
-					index++;
-				}
+            if(body.tracked) {
+                for(var jointType in body.joints) {
+                    var joint = body.joints[jointType];
+                    ctx.fillStyle = colors[index];
+                    ctx.fillRect(joint.depthX * 512, joint.depthY * 424, 10, 10);
+                }
+            //head->shoulder_spine_center->spine_midpoint->spine_base +
+            //right_hip->right_knee->right_ankle->right_foot
+            var height = length(body.joints[3], body.joints[20]) + 
+                        length(body.joints[20], body.joints[1]) +
+                        length(body.joints[1], body.joints[0]) + 
+                        length(body.joints[16], body.joints[17]) + 
+                        length(body.joints[17], body.joints[18]) +
+                        length(body.joints[18], body.joints[19]);
+            console.log(height);
+                index++;
+            }
         });
-        console.log(bodyFrame);
+        //console.log(bodyFrame);
         
         //TODO: Code for differentiating tracked bodies
-        var user = bodyFrame.bodies[3];
+        //var user = bodyFrame.bodies[1];
 
-        if(user.tracked){
-            console.log(user.joints[6]);
-            if(user.joints[6].cameraY>0.5){
-                synth.triggerAttackRelease('C5', '8n');
-            }
-            else if(user.joints[6].cameraY<-0.5){
-                synth.triggerAttackRelease('C3', '8n');
-            }
-            else{
-                synth.triggerAttackRelease('C4', '8n');
-            }
-        }
+        //if(user.tracked){
+        //    console.log(user.joints[6]);
+        //    if(user.joints[6].cameraY>0.5){
+        //        synth.triggerAttackRelease('C5', '8n');
+        //    }
+        //    else if(user.joints[6].cameraY<-0.5){
+        //        synth.triggerAttackRelease('C3', '8n');
+        //    }
+        //    else{
+        //        synth.triggerAttackRelease('C4', '8n');
+        //    }
+        //}
     }
 </script>
