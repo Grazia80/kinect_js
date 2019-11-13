@@ -5,8 +5,11 @@
 
 <script type="text/javascript">
     //create a synth and connect it to the master output (your speakers)
+
     var synth = new Tone.Synth().toMaster();
-    
+
+    //Stop Sounds to be played.Set with btns on screen
+    var play = false;
 
     console.log("starting");
     var socket = io.connect("localhost:8000");
@@ -31,6 +34,7 @@
         // console.log(bodyFrame);
         bodyFrame.bodies.forEach(function(body){
             if(body.tracked) {
+              playSound(body, play)
                 for(var jointType in body.joints) {
                     var joint = body.joints[jointType];
                     ctx.fillStyle = colors[index];
@@ -38,32 +42,119 @@
                 }
             //head->shoulder_spine_center->spine_midpoint->spine_base +
             //right_hip->right_knee->right_ankle->right_foot
-            var height = length(body.joints[3], body.joints[20]) + 
+            var height = length(body.joints[3], body.joints[20]) +
                         length(body.joints[20], body.joints[1]) +
-                        length(body.joints[1], body.joints[0]) + 
-                        length(body.joints[16], body.joints[17]) + 
+                        length(body.joints[1], body.joints[0]) +
+                        length(body.joints[16], body.joints[17]) +
                         length(body.joints[17], body.joints[18]) +
                         length(body.joints[18], body.joints[19]);
-            console.log(height);
+          //  console.log(height);
                 index++;
             }
         });
         //console.log(bodyFrame);
-        
-        //TODO: Code for differentiating tracked bodies
-        //var user = bodyFrame.bodies[1];
 
-        //if(user.tracked){
-        //    console.log(user.joints[6]);
+        //TODO: Code for differentiating tracked bodies
+        var user = bodyFrame.bodies[1];
+
+        // if(user.tracked){
+        //
+        //     console.log(user.joints[6]);
         //    if(user.joints[6].cameraY>0.5){
-        //        synth.triggerAttackRelease('C5', '8n');
-        //    }
-        //    else if(user.joints[6].cameraY<-0.5){
-        //        synth.triggerAttackRelease('C3', '8n');
-        //    }
-        //    else{
-        //        synth.triggerAttackRelease('C4', '8n');
-        //    }
-        //}
+        //         synth.triggerAttackRelease('C5', '8n');
+        //     }
+        //     else if(user.joints[6].cameraY<-0.5){
+        //         synth.triggerAttackRelease('C3', '8n');
+        //     }
+        //     else{
+        //         synth.triggerAttackRelease('C4', '8n');
+        //     }
+        // }
     }
+
+    // play sound with left and right hands
+    function playSound(user,play) {
+      if(play){
+      var pitch = Math.round(Math.abs(user.joints[6].cameraY*10)).toString();
+      var note = 'A';
+      var Xvalue = user.joints[11].cameraX;
+      if( Xvalue > 0.0 && Xvalue < 0.15){
+        note = 'A'
+      }
+      if( Xvalue > 0.16 && Xvalue < 0.30){
+        note = 'B'
+      }
+      if( Xvalue > 0.31 && Xvalue < 0.45){
+        note = 'C'
+      }
+      if(Xvalue > 0.46 && Xvalue < 0.60){
+        note = 'D'
+      }
+      if(Xvalue > 0.61 && Xvalue < 0.75){
+        note = 'E'
+      }
+      if(Xvalue > 0.76 && Xvalue < 0.90){
+        note = 'F'
+      }
+      if(Xvalue > 0.91 && Xvalue < 1){
+        note = 'G'
+      }
+      console.log('Note Sound: ' + note + pitch);
+
+           synth.triggerAttackRelease(note + pitch, '8n');
+        // if(user.joints[6].cameraY>0.5){
+        //      synth.triggerAttackRelease('C5', '8n');
+        //  }
+        //  else if(user.joints[6].cameraY<-0.5){
+        //      synth.triggerAttackRelease('C3', '8n');
+        //  }
+        //  else{
+        //      synth.triggerAttackRelease('C4', '8n');
+        //  }
+     }
+      // Playing Now
+
+      // bodyFrame.bodies.forEach(function(body){
+      //     if(body.tracked) {
+      //       var leftHX = body.joints[7].colorX;
+      //       var leftHY = body.joints[7].colorY;
+      //
+      //       var rigthHX = body.joints[11].colorX;
+      //       var rigthHY = body.joints[11].colorY;
+      //     }
+      //
+      //     if(leftHX>0.5){
+      //       //synth.triggerAttackRelease('C5', '8n');
+      //     }
+      //     else if(leftHY<-0.5){
+      //       //synth.triggerAttackRelease('C3', '8n');
+      //     }
+      //     else{
+      //     //  synth.triggerAttackRelease('C4', '8n');
+      //    }
+      // });
+    }
+
+
+    // Switch on the sound
+    function playInstr(){
+      play = true;
+      console.log(play);
+    }
+
+    //Swith off the sounds
+    function stopInstr(){
+      play = false;
+      console.log(play);
+    }
+
 </script>
+
+<html>
+<body>
+
+<button onclick="playInstr()" type="button">Start</button>
+<button onclick="stopInstr()" type="button">Stop</button>
+
+</body>
+</html>
